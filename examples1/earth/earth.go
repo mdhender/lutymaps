@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package examples1
+package earth
 
 import (
 	"fmt"
@@ -30,6 +30,10 @@ import (
 
 	"github.com/fogleman/ln/ln"
 	"github.com/jonas-p/go-shp"
+)
+
+const (
+	width, height = 256, 256
 )
 
 func GetPaths(shape shp.Shape) ln.Paths {
@@ -80,7 +84,7 @@ type Earth struct {
 }
 
 func (e *Earth) Paths() ln.Paths {
-	// return append(e.Lines, e.Shape.Paths()...)
+	//return append(e.Lines, e.Shape.Paths()...)
 	return e.Lines
 }
 
@@ -93,7 +97,8 @@ func Render(lines ln.Paths, matrix ln.Matrix) ln.Paths {
 	eye := ln.LatLngToXYZ(35.7806, -78.6389, 1).Normalize().MulScalar(2.46)
 	center := ln.Vector{}
 	up := ln.Vector{0, 0, 1}
-	return scene.Render(eye, center, up, 60, 1, 0.1, 100, 0.01, 0.01)
+	//return scene.Render(eye, center, up, 60, 1, 0.1, 100, 0.01, 0.01)
+	return scene.Render(eye, center, up, width, height, 0.1, 100, 0.01, 0.01)
 }
 
 func Circle(r float64) ln.Path {
@@ -107,14 +112,14 @@ func Circle(r float64) ln.Path {
 	return result
 }
 
-func EarthX() {
+func Main() {
 	lines := LoadPaths()
 	m := ln.Identity()
 	paths := Render(lines, m)
 	paths = append(paths, Circle(0.95))
 	paths = append(paths, Circle(0.953))
 	paths = append(paths, Circle(0.956))
-	paths.WriteToPNG("earth.png", 256, 256)
+	paths.WriteToPNG("earth.png", width, height)
 	// paths.Print()
 	for i := 0; i < 360; i += 2 {
 		fmt.Println(i)
@@ -124,6 +129,6 @@ func EarthX() {
 		paths = append(paths, Circle(0.953))
 		paths = append(paths, Circle(0.956))
 		filename := fmt.Sprintf("earth/out%03d.png", i)
-		paths.WriteToPNG(filename, 256, 256)
+		paths.WriteToPNG(filename, width, height)
 	}
 }

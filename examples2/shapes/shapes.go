@@ -52,20 +52,32 @@ var (
 	background = HexColor("#FFF8E3")         // background color
 )
 
+func randXYZ(radius float64) (x, y, z float64) {
+	for {
+		x = rand.Float64()*2*radius - radius
+		y = rand.Float64()*2*radius - radius
+		z = rand.Float64()*2*radius - radius
+		if x*x+y*y+z*z < radius {
+			return x, y, z
+		}
+	}
+}
+
 func Main() {
 	start := time.Now()
 
-	mesh := NewEmptyMesh()
-	for i := 0; i < 1500; i++ {
-		var x, y, z float64
-		for {
-			x = rand.Float64()*2 - 1
-			y = rand.Float64()*2 - 1
-			z = rand.Float64()*2 - 1
-			if x*x+y*y+z*z < 1 {
-				break
-			}
-		}
+	mesh, radius := NewEmptyMesh(), 10.0
+	for i := 0; i < 1_500; i++ {
+		//var x, y, z float64
+		//for {
+		//	x = rand.Float64()*2 - 1
+		//	y = rand.Float64()*2 - 1
+		//	z = rand.Float64()*2 - 1
+		//	if x*x+y*y+z*z < 1 {
+		//		break
+		//	}
+		//}
+		x, y, z := randXYZ(radius)
 		p := Vector{x, y, z}.MulScalar(4)
 		s := V(0.2, 0.2, 0.2)
 		u := RandomUnitVector()
@@ -93,14 +105,65 @@ func Main() {
 	context.DrawMesh(mesh)
 	fmt.Println("shapes", time.Since(start))
 
-	mesh, _ = LoadSTL("sphere.stl")
+	mesh = NewEmptyMesh()
+	for n := -10; n < 0; n = n + 2 {
+		sp, err := LoadSTL("sphere.stl")
+		if err != nil {
+			panic(err)
+		}
+		sp.SmoothNormals()
+		sp.Transform(Scale(V(0.5, 0.5, 0.5)))
+		sp.Transform(Translate(V(float64(n), float64(n), -0.0)))
+		mesh.Add(sp)
+	}
+	shader = NewPhongShader(matrix, light, eye)
+	shader.ObjectColor = HexColor("FF9DFF").Alpha(0.65)
+	shader.SpecularPower = 0
+	context.Shader = shader
+	context.DrawMesh(mesh)
+	context.Wireframe = true
+	context.DepthBias = -0.00001
+	context.DrawMesh(mesh)
 	fmt.Println("shapes", time.Since(start))
-	mesh.SmoothNormals()
-	mesh.Transform(Scale(V(2.5, 2.5, 2.5)))
+
+	mesh = NewEmptyMesh()
+	for n := 0; n < 5; n++ {
+		x, y, z := randXYZ(radius)
+		sp, err := LoadSTL("sphere.stl")
+		if err != nil {
+			panic(err)
+		}
+		sp.SmoothNormals()
+		sp.Transform(Scale(V(0.5, 0.5, 0.5)))
+		sp.Transform(Translate(V(x, y, z)))
+		mesh.Add(sp)
+	}
 	shader = NewPhongShader(matrix, light, eye)
 	shader.ObjectColor = HexColor("FFFF9D").Alpha(0.65)
 	shader.SpecularPower = 0
 	context.Shader = shader
+	context.DrawMesh(mesh)
+	context.Wireframe = true
+	context.DepthBias = -0.00001
+	context.DrawMesh(mesh)
+	fmt.Println("shapes", time.Since(start))
+
+	mesh = NewEmptyMesh()
+	for n := 0; n < 5; n++ {
+		x, y, z := randXYZ(radius)
+		sp, err := LoadSTL("sphere.stl")
+		if err != nil {
+			panic(err)
+		}
+		sp.SmoothNormals()
+		sp.Transform(Scale(V(0.25, 0.25, 0.25)))
+		sp.Transform(Translate(V(x, y, z)))
+		mesh.Add(sp)
+	}
+	shader3 := NewPhongShader(matrix, light, eye)
+	shader3.ObjectColor = HexColor("9DFFFF").Alpha(0.65)
+	shader3.SpecularPower = 0
+	context.Shader = shader3
 	context.DrawMesh(mesh)
 	context.Wireframe = true
 	context.DepthBias = -0.00001

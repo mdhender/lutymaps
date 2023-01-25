@@ -22,64 +22,14 @@
  * SOFTWARE.
  */
 
-// Package mem implements an in-memory data store.
 package mem
 
-// Store implements an in-memory data store.
-type Store struct {
-	systems Systems
-}
-
-type Systems []*System
-
-// System implements the data for a system.
-type System struct {
-	x, y, z int
-	kind    SystemKind
-}
-
-func (s *System) Points() (float64, float64, float64) {
-	if s == nil {
-		return 0, 0, 0
+func FilterBySector(x, y, z int, radius float64) func(*System) bool {
+	rSquared := int(radius * radius)
+	return func(system *System) bool {
+		dx := system.x - x
+		dy := system.y - y
+		dz := system.z - z
+		return dx*dx+dy*dy+dz*dz <= rSquared
 	}
-	return float64(s.x), float64(s.y), float64(s.z)
-}
-
-// SystemKind is an enum for the type of system
-type SystemKind int
-
-const (
-	SKEmpty SystemKind = iota
-	SKBlueSuperGiant
-	SKDenseDustCloud
-	SKMediumDustCloud
-	SKYellowMainSequence
-)
-
-// String implements the Stringer interface.
-func (sk SystemKind) String() string {
-	switch sk {
-	case SKEmpty:
-		return "Empty"
-	case SKBlueSuperGiant:
-		return "Blue Super Giant"
-	case SKDenseDustCloud:
-		return "Dense Dust Cloud"
-	case SKMediumDustCloud:
-		return "Medium Dust Cloud"
-	case SKYellowMainSequence:
-		return "Yellow Main Sequence"
-	}
-	return ""
-}
-
-func (s *Store) Filter(fn func(*System) bool) Systems {
-	var systems Systems
-	for _, system := range s.systems {
-		if !fn(system) {
-			continue
-		}
-		systems = append(systems, system)
-	}
-	return systems
 }

@@ -27,8 +27,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/mdhender/lutymaps/examples1"
-	"github.com/mdhender/lutymaps/examples2/shapes"
+	"github.com/mdhender/lutymaps/scan"
 	"github.com/mdhender/lutymaps/store/jsdb"
 	"github.com/mdhender/lutymaps/store/mem"
 	"math/rand"
@@ -65,10 +64,14 @@ func run() error {
 		return fmt.Errorf("luty: %w", err)
 	}
 
+	err = scan.New(mstore, mem.FilterBySector(0, 0, 0, 50), "scan.png")
+	if err != nil {
+		return fmt.Errorf("luty: %w", err)
+	}
+
 	//examples1.Beads()
-	//examples1.EarthX()
 	//examples1.Example1()
-	examples1.Outline()
+	//examples1.Outline()
 	//examples1.SliceBowser()
 	//examples1.SliceSuzanne()
 	//examples1.Slices()
@@ -76,7 +79,8 @@ func run() error {
 	//examples1.VoxelizeBowser()
 	//examples1.VoxelizeBunny()
 
-	shapes.Main()
+	//earth.Main()
+	//shapes.Main()
 	//teapot.Main()
 
 	return nil

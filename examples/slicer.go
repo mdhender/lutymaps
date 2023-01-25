@@ -22,54 +22,47 @@
  * SOFTWARE.
  */
 
-// Package main implements the mapping engine for luty.
-package main
+package examples
 
 import (
 	"fmt"
-	"github.com/mdhender/lutymaps/examples"
-	"github.com/mdhender/lutymaps/store/jsdb"
-	"github.com/mdhender/lutymaps/store/mem"
-	"os"
+
+	"github.com/fogleman/ln/ln"
 )
 
-func main() {
-	if err := run(); err != nil {
-		fmt.Println(err)
-		os.Exit(2)
+const Slicers = 32
+const Size = 1024
+
+func SliceBowser() {
+	mesh, err := ln.LoadBinarySTL("bowser.stl")
+	if err != nil {
+		panic(err)
+	}
+	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
+	for i := 0; i < Slicers; i++ {
+		fmt.Printf("bowser/slice%04d\n", i)
+		p := (float64(i)/(Slicers-1))*2 - 1
+		point := ln.Vector{0, 0, p}
+		plane := ln.Plane{point, ln.Vector{0, 0, 1}}
+		paths := plane.IntersectMesh(mesh)
+		paths = paths.Transform(ln.Scale(ln.Vector{Size / 2, Size / 2, 1}).Translate(ln.Vector{Size / 2, Size / 2, 0}))
+		paths.WriteToPNG(fmt.Sprintf("bowser/slice%04d.png", i), Size, Size)
 	}
 }
 
-func run() error {
-	jstore, err := jsdb.New("galaxy-001.json")
+func SliceSuzanne() {
+	mesh, err := ln.LoadOBJ("suzanne.obj")
 	if err != nil {
-		return fmt.Errorf("luty: %w", err)
+		panic(err)
 	}
-
-	mstore, err := mem.AdaptJSDBToStore(jstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
+	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
+	for i := 0; i < Slicers; i++ {
+		fmt.Printf("suzanne/slice%04d\n", i)
+		p := (float64(i)/(Slicers-1))*2 - 1
+		point := ln.Vector{0, 0, p}
+		plane := ln.Plane{point, ln.Vector{0, 0, 1}}
+		paths := plane.IntersectMesh(mesh)
+		paths = paths.Transform(ln.Scale(ln.Vector{Size / 2, Size / 2, 1}).Translate(ln.Vector{Size / 2, Size / 2, 0}))
+		paths.WriteToPNG(fmt.Sprintf("suzanne/slice%04d.png", i), Size, Size)
 	}
-
-	jstore, err = mem.AdaptStoreToJSDB(mstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-	err = jstore.Save("galaxy-002.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	examples.Beads()
-	examples.EarthX()
-	examples.Example1()
-	examples.Outline()
-	examples.SliceBowser()
-	examples.SliceSuzanne()
-	examples.Slices()
-	examples.Suzanne()
-	examples.VoxelizeBowser()
-	examples.VoxelizeBunny()
-
-	return nil
 }

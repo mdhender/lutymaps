@@ -22,54 +22,31 @@
  * SOFTWARE.
  */
 
-// Package main implements the mapping engine for luty.
-package main
+package examples
 
 import (
-	"fmt"
-	"github.com/mdhender/lutymaps/examples"
-	"github.com/mdhender/lutymaps/store/jsdb"
-	"github.com/mdhender/lutymaps/store/mem"
-	"os"
+	"math/rand"
+
+	"github.com/fogleman/ln/ln"
 )
 
-func main() {
-	if err := run(); err != nil {
-		fmt.Println(err)
-		os.Exit(2)
+func Outline() {
+	eye := ln.Vector{8, 8, 8}
+	center := ln.Vector{0, 0, 0}
+	up := ln.Vector{0, 0, 1}
+	scene := ln.Scene{}
+	n := 10
+	for x := -n; x <= n; x++ {
+		for y := -n; y <= n; y++ {
+			z := rand.Float64() * 3
+			v := ln.Vector{float64(x), float64(y), z}
+			sphere := ln.NewOutlineSphere(eye, up, v, 0.45)
+			scene.Add(sphere)
+		}
 	}
-}
-
-func run() error {
-	jstore, err := jsdb.New("galaxy-001.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	mstore, err := mem.AdaptJSDBToStore(jstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	jstore, err = mem.AdaptStoreToJSDB(mstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-	err = jstore.Save("galaxy-002.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	examples.Beads()
-	examples.EarthX()
-	examples.Example1()
-	examples.Outline()
-	examples.SliceBowser()
-	examples.SliceSuzanne()
-	examples.Slices()
-	examples.Suzanne()
-	examples.VoxelizeBowser()
-	examples.VoxelizeBunny()
-
-	return nil
+	width := 1920.0
+	height := 1200.0
+	fovy := 50.0
+	paths := scene.Render(eye, center, up, width, height, fovy, 0.1, 100, 0.01)
+	paths.WriteToPNG("outline.png", width, height)
 }

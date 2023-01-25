@@ -22,54 +22,46 @@
  * SOFTWARE.
  */
 
-// Package main implements the mapping engine for luty.
-package main
+package examples
 
-import (
-	"fmt"
-	"github.com/mdhender/lutymaps/examples"
-	"github.com/mdhender/lutymaps/store/jsdb"
-	"github.com/mdhender/lutymaps/store/mem"
-	"os"
-)
+import "github.com/fogleman/ln/ln"
 
-func main() {
-	if err := run(); err != nil {
-		fmt.Println(err)
-		os.Exit(2)
+func VoxelizeBowser() {
+	scene := ln.Scene{}
+	mesh, err := ln.LoadBinarySTL("bowser.stl")
+	if err != nil {
+		panic(err)
 	}
+	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
+	cubes := mesh.Voxelize(1.0 / 64)
+	for _, cube := range cubes {
+		scene.Add(cube)
+	}
+	eye := ln.Vector{-1, -2, 0}
+	center := ln.Vector{0, 0, 0}
+	up := ln.Vector{0, 0, 1}
+	width := 1024.0 * 2
+	height := 1024.0 * 2
+	paths := scene.Render(eye, center, up, width, height, 60, 0.1, 100, 0.01)
+	paths.WriteToPNG("voxelize-bowser.png", width, height)
 }
 
-func run() error {
-	jstore, err := jsdb.New("galaxy-001.json")
+func VoxelizeBunny() {
+	scene := ln.Scene{}
+	mesh, err := ln.LoadBinarySTL("bunny.stl")
 	if err != nil {
-		return fmt.Errorf("luty: %w", err)
+		panic(err)
 	}
-
-	mstore, err := mem.AdaptJSDBToStore(jstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
+	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
+	cubes := mesh.Voxelize(1.0 / 64)
+	for _, cube := range cubes {
+		scene.Add(cube)
 	}
-
-	jstore, err = mem.AdaptStoreToJSDB(mstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-	err = jstore.Save("galaxy-002.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	examples.Beads()
-	examples.EarthX()
-	examples.Example1()
-	examples.Outline()
-	examples.SliceBowser()
-	examples.SliceSuzanne()
-	examples.Slices()
-	examples.Suzanne()
-	examples.VoxelizeBowser()
-	examples.VoxelizeBunny()
-
-	return nil
+	eye := ln.Vector{-1, -2, 0}
+	center := ln.Vector{0, 0, 0}
+	up := ln.Vector{0, 0, 1}
+	width := 1024.0 * 2
+	height := 1024.0 * 2
+	paths := scene.Render(eye, center, up, width, height, 60, 0.1, 100, 0.01)
+	paths.WriteToPNG("voxelize-bunny.png", width, height)
 }

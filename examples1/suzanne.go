@@ -22,35 +22,24 @@
  * SOFTWARE.
  */
 
-package examples
+package examples1
 
-import (
-	"math/rand"
+import "github.com/fogleman/ln/ln"
 
-	"github.com/fogleman/ln/ln"
-)
-
-func cube(x, y, z float64) ln.Shape {
-	size := 0.5
-	v := ln.Vector{x, y, z}
-	return ln.NewCube(v.SubScalar(size), v.AddScalar(size))
-}
-
-func Example1() {
+func Suzanne() {
 	scene := ln.Scene{}
-	for x := -2; x <= 2; x++ {
-		for y := -2; y <= 2; y++ {
-			z := rand.Float64()
-			scene.Add(cube(float64(x), float64(y), z))
-		}
+	mesh, err := ln.LoadOBJ("suzanne.obj")
+	if err != nil {
+		panic(err)
 	}
-	eye := ln.Vector{6, 5, 3}
-	center := ln.Vector{0, 0, 0}
-	up := ln.Vector{0, 0, 1}
-	width := 1920.0
-	height := 1200.0
-	fovy := 30.0
-	paths := scene.Render(eye, center, up, width, height, fovy, 0.1, 100, 0.01)
-	paths.WriteToPNG("example1.png", width, height)
-	paths.WriteToSVG("example1.svg", width, height)
+	mesh.UnitCube()
+	scene.Add(ln.NewTransformedShape(mesh, ln.Rotate(ln.Vector{0, 1, 0}, 0.5)))
+	// scene.Add(mesh)
+	eye := ln.Vector{-0.5, 0.5, 2}
+	center := ln.Vector{}
+	up := ln.Vector{0, 1, 0}
+	width := 1024.0
+	height := 1024.0
+	paths := scene.Render(eye, center, up, width, height, 35, 0.1, 100, 0.01)
+	paths.WriteToPNG("suzanne.png", width, height)
 }

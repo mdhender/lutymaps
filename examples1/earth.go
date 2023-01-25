@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package examples
+package examples1
 
 import (
 	"fmt"

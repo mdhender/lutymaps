@@ -22,24 +22,47 @@
  * SOFTWARE.
  */
 
-package examples
+package examples1
 
-import "github.com/fogleman/ln/ln"
+import (
+	"fmt"
 
-func Suzanne() {
-	scene := ln.Scene{}
+	"github.com/fogleman/ln/ln"
+)
+
+const Slicers = 32
+const Size = 1024
+
+func SliceBowser() {
+	mesh, err := ln.LoadBinarySTL("bowser.stl")
+	if err != nil {
+		panic(err)
+	}
+	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
+	for i := 0; i < Slicers; i++ {
+		fmt.Printf("bowser/slice%04d\n", i)
+		p := (float64(i)/(Slicers-1))*2 - 1
+		point := ln.Vector{0, 0, p}
+		plane := ln.Plane{point, ln.Vector{0, 0, 1}}
+		paths := plane.IntersectMesh(mesh)
+		paths = paths.Transform(ln.Scale(ln.Vector{Size / 2, Size / 2, 1}).Translate(ln.Vector{Size / 2, Size / 2, 0}))
+		paths.WriteToPNG(fmt.Sprintf("bowser/slice%04d.png", i), Size, Size)
+	}
+}
+
+func SliceSuzanne() {
 	mesh, err := ln.LoadOBJ("suzanne.obj")
 	if err != nil {
 		panic(err)
 	}
-	mesh.UnitCube()
-	scene.Add(ln.NewTransformedShape(mesh, ln.Rotate(ln.Vector{0, 1, 0}, 0.5)))
-	// scene.Add(mesh)
-	eye := ln.Vector{-0.5, 0.5, 2}
-	center := ln.Vector{}
-	up := ln.Vector{0, 1, 0}
-	width := 1024.0
-	height := 1024.0
-	paths := scene.Render(eye, center, up, width, height, 35, 0.1, 100, 0.01)
-	paths.WriteToPNG("suzanne.png", width, height)
+	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
+	for i := 0; i < Slicers; i++ {
+		fmt.Printf("suzanne/slice%04d\n", i)
+		p := (float64(i)/(Slicers-1))*2 - 1
+		point := ln.Vector{0, 0, p}
+		plane := ln.Plane{point, ln.Vector{0, 0, 1}}
+		paths := plane.IntersectMesh(mesh)
+		paths = paths.Transform(ln.Scale(ln.Vector{Size / 2, Size / 2, 1}).Translate(ln.Vector{Size / 2, Size / 2, 0}))
+		paths.WriteToPNG(fmt.Sprintf("suzanne/slice%04d.png", i), Size, Size)
+	}
 }

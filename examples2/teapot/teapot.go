@@ -22,46 +22,65 @@
  * SOFTWARE.
  */
 
-package examples
+package teapot
 
-import "github.com/fogleman/ln/ln"
+import (
+	"fmt"
+	"time"
 
-func VoxelizeBowser() {
-	scene := ln.Scene{}
-	mesh, err := ln.LoadBinarySTL("bowser.stl")
+	. "github.com/fogleman/fauxgl"
+	"github.com/nfnt/resize"
+)
+
+const (
+	scale  = 4
+	width  = 1920
+	height = 1080
+	fovy   = 30
+	near   = 1
+	far    = 10
+)
+
+var (
+	eye    = V(0, 2.4, 0)
+	center = V(0, 0, 0)
+	up     = V(0, 0, 1)
+)
+
+func Main() {
+	// load a mesh
+	mesh, err := LoadPLY("teapot.ply")
 	if err != nil {
 		panic(err)
 	}
-	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
-	cubes := mesh.Voxelize(1.0 / 64)
-	for _, cube := range cubes {
-		scene.Add(cube)
-	}
-	eye := ln.Vector{-1, -2, 0}
-	center := ln.Vector{0, 0, 0}
-	up := ln.Vector{0, 0, 1}
-	width := 1024.0 * 2
-	height := 1024.0 * 2
-	paths := scene.Render(eye, center, up, width, height, 60, 0.1, 100, 0.01)
-	paths.WriteToPNG("voxelize-bowser.png", width, height)
-}
 
-func VoxelizeBunny() {
-	scene := ln.Scene{}
-	mesh, err := ln.LoadBinarySTL("bunny.stl")
-	if err != nil {
-		panic(err)
-	}
-	mesh.FitInside(ln.Box{ln.Vector{-1, -1, -1}, ln.Vector{1, 1, 1}}, ln.Vector{0.5, 0.5, 0.5})
-	cubes := mesh.Voxelize(1.0 / 64)
-	for _, cube := range cubes {
-		scene.Add(cube)
-	}
-	eye := ln.Vector{-1, -2, 0}
-	center := ln.Vector{0, 0, 0}
-	up := ln.Vector{0, 0, 1}
-	width := 1024.0 * 2
-	height := 1024.0 * 2
-	paths := scene.Render(eye, center, up, width, height, 60, 0.1, 100, 0.01)
-	paths.WriteToPNG("voxelize-bunny.png", width, height)
+	// fit mesh in a bi-unit cube centered at the origin
+	mesh.BiUnitCube()
+
+	// smooth the normals
+	mesh.SmoothNormalsThreshold(Radians(60))
+
+	// create a rendering context
+	context := NewContext(width*scale, height*scale)
+	context.ClearColorBufferWith(White)
+
+	// create transformation matrix and light direction
+	aspect := float64(width) / float64(height)
+	matrix := LookAt(eye, center, up).Perspective(fovy, aspect, near, far)
+	light := V(0, 1, 1).Normalize()
+
+	// render
+	start := time.Now()
+	shader := NewPhongShader(matrix, light, eye)
+	shader.ObjectColor = HexColor("#B9121B")
+	shader.SpecularColor = Gray(0.25)
+	shader.SpecularPower = 64
+	context.Shader = shader
+	context.DrawMesh(mesh)
+	fmt.Println(time.Since(start))
+
+	// save image
+	image := context.Image()
+	image = resize.Resize(width, height, image, resize.Bilinear)
+	SavePNG("teapot.png", image)
 }

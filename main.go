@@ -26,12 +26,7 @@
 package main
 
 import (
-	"fmt"
 	"github.com/mdhender/lutymaps/cli"
-	"github.com/mdhender/lutymaps/pkg/adapters"
-	"github.com/mdhender/lutymaps/pkg/stores/jsdb"
-	"github.com/mdhender/lutymaps/pkg/stores/mem"
-	"github.com/mdhender/lutymaps/scan"
 	"math/rand"
 	"time"
 )
@@ -41,46 +36,4 @@ func main() {
 
 	// run the command
 	cli.Execute()
-}
-
-func run() error {
-	jstore, err := jsdb.New("galaxy-001.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	mstore, err := adapters.JSDBToStore(jstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	jstore, err = adapters.StoreToJSDB(mstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-	err = jstore.Save("galaxy-002.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	err = scan.New(mstore, mem.FilterBySector(0, 0, 0, 50), "scan.png")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	//examples1.Beads()
-	//examples1.Example1()
-	//examples1.Outline()
-	//examples1.SliceBowser()
-	//examples1.SliceSuzanne()
-	//examples1.Slices()
-	//examples1.Suzanne()
-	//examples1.VoxelizeBowser()
-	//examples1.VoxelizeBunny()
-
-	//earth.Main()
-	//shapes.Main()
-	//teapot.Main()
-
-	return nil
 }

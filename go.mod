@@ -5,6 +5,8 @@ go 1.19
 require (
 	github.com/fogleman/fauxgl v0.0.0-20200818143847-27cddc103802
 	github.com/fogleman/ln v0.0.0-20170223135521-12e6c6e74459
+	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/cors v1.2.1
 	github.com/jonas-p/go-shp v0.1.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646

@@ -25,7 +25,11 @@
 package cli
 
 import (
-	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	"github.com/mdhender/lutymaps/pkg/adapters"
+	"github.com/mdhender/lutymaps/pkg/stores/jsdb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log"
@@ -38,8 +42,48 @@ var cmdServe = &cobra.Command{
 	Short: "Serve data for the engine",
 	Long:  `Provide a REST-ish API for engine data.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("listening on %q using router\n", net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port))
-		log.Fatal(http.ListenAndServe(net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port), nil))
+		jsPath := "galaxy-001.json"
+		jstore, err := jsdb.New(jsPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("serve: loaded %q\n", jsPath)
+		jsPath = "accounts.json"
+		jsAccts := jsdb.AccountStore{}
+		if err = jsAccts.Load(jsPath); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("serve: loaded %q\n", jsPath)
+
+		mstore, err := adapters.JSDBToStore(jstore)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("serve: adapted galaxy store\n")
+		mstore.Accounts, err = adapters.JSAccountsToMemAccounts(jsAccts)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("serve: adapted accounts store\n")
+
+		r, routerName := chi.NewRouter(), "chi"
+		r.Use(middleware.Logger)
+		r.Use(middleware.Recoverer)
+		r.Use(cors.Handler(cors.Options{
+			AllowedOrigins: []string{"*"},
+			AllowedMethods: []string{
+				"GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS",
+			},
+			AllowedHeaders: []string{
+				"Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Cache-Control", "Connection", "Content-Type", "DNT", "Host", "Origin", "Pragma", "Referer", "User-Agent",
+			},
+			ExposedHeaders:   []string{"Link"},
+			AllowCredentials: true,
+			MaxAge:           300, // Maximum value not ignored by any of major browsers
+		}))
+
+		log.Printf("server: listening on %q using %s router\n", net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port), routerName)
+		log.Fatal(http.ListenAndServe(net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port), r))
 	},
 }
 

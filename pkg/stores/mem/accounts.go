@@ -22,11 +22,14 @@
  * SOFTWARE.
  */
 
-// Package mem implements an in-memory data store.
 package mem
 
-// Store implements an in-memory data store.
-type Store struct {
-	Accounts map[string]Account
-	Systems  Systems
+type Accounts map[string]Account
+
+// Account details
+type Account struct {
+	Id           string
+	UserId       string
+	HashedSecret string // hashed secret
+	Roles        map[string]bool
 }

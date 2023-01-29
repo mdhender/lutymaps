@@ -27,7 +27,47 @@ package adapters
 import (
 	"github.com/mdhender/lutymaps/pkg/stores/jsdb"
 	"github.com/mdhender/lutymaps/pkg/stores/mem"
+	"sort"
 )
+
+// JSAccountsToMemAccounts converts JSON accounts to in-memory accounts
+func JSAccountsToMemAccounts(js jsdb.AccountStore) (mem.Accounts, error) {
+	accts := make(map[string]mem.Account)
+	for _, acct := range js.Accounts {
+		a := mem.Account{
+			Id:           acct.Id,
+			UserId:       acct.UserId,
+			HashedSecret: acct.Secret,
+			Roles:        make(map[string]bool),
+		}
+		for _, role := range acct.Roles {
+			a.Roles[role] = true
+		}
+		accts[a.Id] = a
+	}
+	return accts, nil
+}
+
+// MemAccountsToJSAccounts converts in-memory accounts to JSON accounts
+func MemAccountsToJSAccounts(ms mem.Accounts) (*jsdb.AccountStore, error) {
+	js := &jsdb.AccountStore{}
+	for _, acct := range ms {
+		a := &jsdb.Account{
+			Id:     acct.Id,
+			UserId: acct.UserId,
+			Secret: acct.HashedSecret,
+		}
+		for role, ok := range acct.Roles {
+			if ok {
+				a.Roles = append(a.Roles, role)
+			}
+		}
+		sort.Strings(a.Roles)
+		js.Accounts = append(js.Accounts, a)
+	}
+	sort.Slice(js.Accounts, func(i, j int) bool { return js.Accounts[i].Id < js.Accounts[j].Id })
+	return js, nil
+}
 
 // JSDBToStore converts a JSDB store to an in-memory store.
 func JSDBToStore(store *jsdb.Store) (*mem.Store, error) {

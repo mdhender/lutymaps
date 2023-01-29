@@ -30,8 +30,8 @@ import (
 	"github.com/mdhender/lutymaps/cli"
 	"github.com/mdhender/lutymaps/pkg/adapters"
 	"github.com/mdhender/lutymaps/scan"
-	"github.com/mdhender/lutymaps/store/jsdb"
-	"github.com/mdhender/lutymaps/store/mem"
+	"github.com/mdhender/lutymaps/stores/jsdb"
+	"github.com/mdhender/lutymaps/stores/mem"
 	"math/rand"
 	"time"
 )

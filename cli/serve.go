@@ -22,64 +22,31 @@
  * SOFTWARE.
  */
 
-// Package main implements the mapping engine for luty.
-package main
+package cli
 
 import (
 	"fmt"
-	"github.com/mdhender/lutymaps/cli"
-	"github.com/mdhender/lutymaps/scan"
-	"github.com/mdhender/lutymaps/store/jsdb"
-	"github.com/mdhender/lutymaps/store/mem"
-	"math/rand"
-	"time"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"log"
+	"net"
+	"net/http"
 )
 
-func main() {
-	rand.Seed(time.Now().UnixNano())
-
-	// run the command
-	cli.Execute()
+var cmdServe = &cobra.Command{
+	Use:   "serve",
+	Short: "Serve data for the engine",
+	Long:  `Provide a REST-ish API for engine data.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("listening on %q using router\n", net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port))
+		log.Fatal(http.ListenAndServe(net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port), nil))
+	},
 }
 
-func run() error {
-	jstore, err := jsdb.New("galaxy-001.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	mstore, err := mem.AdaptJSDBToStore(jstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	jstore, err = mem.AdaptStoreToJSDB(mstore)
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-	err = jstore.Save("galaxy-002.json")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	err = scan.New(mstore, mem.FilterBySector(0, 0, 0, 50), "scan.png")
-	if err != nil {
-		return fmt.Errorf("luty: %w", err)
-	}
-
-	//examples1.Beads()
-	//examples1.Example1()
-	//examples1.Outline()
-	//examples1.SliceBowser()
-	//examples1.SliceSuzanne()
-	//examples1.Slices()
-	//examples1.Suzanne()
-	//examples1.VoxelizeBowser()
-	//examples1.VoxelizeBunny()
-
-	//earth.Main()
-	//shapes.Main()
-	//teapot.Main()
-
-	return nil
+func init() {
+	cmdMain.AddCommand(cmdServe)
+	cmdServe.Flags().StringVar(&cliConfig.Server.Host, "host", "", "interface to run server on")
+	_ = viper.BindPFlag("host", cmdServe.Flags().Lookup("host"))
+	cmdServe.Flags().StringVarP(&cliConfig.Server.Port, "port", "p", "3000", "port to run server on")
+	_ = viper.BindPFlag("port", cmdServe.Flags().Lookup("port"))
 }

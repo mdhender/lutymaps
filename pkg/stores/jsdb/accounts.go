@@ -22,11 +22,50 @@
  * SOFTWARE.
  */
 
-// Package mem implements an in-memory data store.
-package mem
+package jsdb
 
-// Store implements an in-memory data store.
-type Store struct {
-	Accounts map[string]Account
-	Systems  Systems
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+// AccountStore implements a flat file data store using JSON.
+type AccountStore struct {
+	Accounts []*Account `json:"accounts"`
+}
+
+// Account details
+type Account struct {
+	Id     string   `json:"id"`
+	UserId string   `json:"user-id"`
+	Secret string   `json:"secret"`
+	Roles  []string `json:"roles"`
+}
+
+// Load loads the store from the path.
+func (s *AccountStore) Load(path string) error {
+	s.Accounts = nil
+	buf, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("jsdb: %w", err)
+	}
+	err = json.Unmarshal(buf, &s)
+	if err != nil {
+		return fmt.Errorf("jsdb: %w", err)
+	}
+	return nil
+}
+
+// Save writes the store to the path.
+func (s *AccountStore) Save(path string) error {
+	buf, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return fmt.Errorf("jsdb: %w", err)
+	}
+	err = os.WriteFile(path, buf, 0666)
+	if err != nil {
+		return fmt.Errorf("jsdb: %w", err)
+	}
+	return nil
 }

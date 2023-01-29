@@ -28,7 +28,7 @@ package scan
 import (
 	"fmt"
 	gl "github.com/fogleman/fauxgl"
-	"github.com/mdhender/lutymaps/stores/mem"
+	"github.com/mdhender/lutymaps/pkg/stores/mem"
 	"github.com/nfnt/resize"
 	"time"
 )

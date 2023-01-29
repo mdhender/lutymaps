@@ -29,9 +29,9 @@ import (
 	"fmt"
 	"github.com/mdhender/lutymaps/cli"
 	"github.com/mdhender/lutymaps/pkg/adapters"
+	"github.com/mdhender/lutymaps/pkg/stores/jsdb"
+	"github.com/mdhender/lutymaps/pkg/stores/mem"
 	"github.com/mdhender/lutymaps/scan"
-	"github.com/mdhender/lutymaps/stores/jsdb"
-	"github.com/mdhender/lutymaps/stores/mem"
 	"math/rand"
 	"time"
 )

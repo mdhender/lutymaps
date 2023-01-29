@@ -25,8 +25,8 @@
 package adapters
 
 import (
-	"github.com/mdhender/lutymaps/stores/jsdb"
-	"github.com/mdhender/lutymaps/stores/mem"
+	"github.com/mdhender/lutymaps/pkg/stores/jsdb"
+	"github.com/mdhender/lutymaps/pkg/stores/mem"
 )
 
 // JSDBToStore converts a JSDB store to an in-memory store.

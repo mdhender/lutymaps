@@ -27,9 +27,9 @@ package mem
 func FilterBySector(x, y, z int, radius float64) func(*System) bool {
 	rSquared := int(radius * radius)
 	return func(system *System) bool {
-		dx := system.x - x
-		dy := system.y - y
-		dz := system.z - z
+		dx := system.X - x
+		dy := system.Y - y
+		dz := system.Z - z
 		return dx*dx+dy*dy+dz*dz <= rSquared
 	}
 }

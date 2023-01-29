@@ -22,59 +22,59 @@
  * SOFTWARE.
  */
 
-package mem
+package adapters
 
-// ideally, adapters would be friends in their own space,
-// but Go doesn't allow for that, so they're here.
+import (
+	"github.com/mdhender/lutymaps/store/jsdb"
+	"github.com/mdhender/lutymaps/store/mem"
+)
 
-import "github.com/mdhender/lutymaps/store/jsdb"
-
-// AdaptJSDBToStore converts a JSDB store to an in-memory store.
-func AdaptJSDBToStore(store *jsdb.Store) (*Store, error) {
-	s := &Store{}
+// JSDBToStore converts a JSDB store to an in-memory store.
+func JSDBToStore(store *jsdb.Store) (*mem.Store, error) {
+	s := &mem.Store{}
 	if store == nil {
 		return s, nil
 	}
 	for _, from := range store.Systems {
-		to := &System{x: from.X, y: from.Y, z: from.Z}
+		to := &mem.System{X: from.X, Y: from.Y, Z: from.Z}
 		switch from.Kind {
 		case "Empty":
-			to.kind = SKEmpty
+			to.Kind = mem.SKEmpty
 		case "Blue Super Giant":
-			to.kind = SKBlueSuperGiant
+			to.Kind = mem.SKBlueSuperGiant
 		case "Dense Dust Cloud":
-			to.kind = SKDenseDustCloud
+			to.Kind = mem.SKDenseDustCloud
 		case "Medium Dust Cloud":
-			to.kind = SKMediumDustCloud
+			to.Kind = mem.SKMediumDustCloud
 		case "Yellow Main Sequence":
-			to.kind = SKYellowMainSequence
+			to.Kind = mem.SKYellowMainSequence
 		default:
-			to.kind = SKEmpty
+			to.Kind = mem.SKEmpty
 		}
-		s.systems = append(s.systems, to)
+		s.Systems = append(s.Systems, to)
 	}
 	return s, nil
 }
 
-// AdaptStoreToJSDB converts an in-memory store to a JSDB store.
-func AdaptStoreToJSDB(s *Store) (*jsdb.Store, error) {
+// StoreToJSDB converts an in-memory store to a JSDB store.
+func StoreToJSDB(s *mem.Store) (*jsdb.Store, error) {
 	store := &jsdb.Store{}
 	store.Meta.Version = 1
 	if s == nil {
 		return store, nil
 	}
-	for _, from := range s.systems {
-		to := &jsdb.System{X: from.x, Y: from.y, Z: from.z}
-		switch from.kind {
-		case SKEmpty:
+	for _, from := range s.Systems {
+		to := &jsdb.System{X: from.X, Y: from.Y, Z: from.Z}
+		switch from.Kind {
+		case mem.SKEmpty:
 			to.Kind = "Empty"
-		case SKBlueSuperGiant:
+		case mem.SKBlueSuperGiant:
 			to.Kind = "Blue Super Giant"
-		case SKDenseDustCloud:
+		case mem.SKDenseDustCloud:
 			to.Kind = "Dense Dust Cloud"
-		case SKMediumDustCloud:
+		case mem.SKMediumDustCloud:
 			to.Kind = "Medium Dust Cloud"
-		case SKYellowMainSequence:
+		case mem.SKYellowMainSequence:
 			to.Kind = "Yellow Main Sequence"
 		default:
 			to.Kind = ""

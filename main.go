@@ -28,6 +28,7 @@ package main
 import (
 	"fmt"
 	"github.com/mdhender/lutymaps/cli"
+	"github.com/mdhender/lutymaps/pkg/adapters"
 	"github.com/mdhender/lutymaps/scan"
 	"github.com/mdhender/lutymaps/store/jsdb"
 	"github.com/mdhender/lutymaps/store/mem"
@@ -48,12 +49,12 @@ func run() error {
 		return fmt.Errorf("luty: %w", err)
 	}
 
-	mstore, err := mem.AdaptJSDBToStore(jstore)
+	mstore, err := adapters.JSDBToStore(jstore)
 	if err != nil {
 		return fmt.Errorf("luty: %w", err)
 	}
 
-	jstore, err = mem.AdaptStoreToJSDB(mstore)
+	jstore, err = adapters.StoreToJSDB(mstore)
 	if err != nil {
 		return fmt.Errorf("luty: %w", err)
 	}

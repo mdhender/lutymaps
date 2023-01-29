@@ -27,22 +27,22 @@ package mem
 
 // Store implements an in-memory data store.
 type Store struct {
-	systems Systems
+	Systems Systems
 }
 
 type Systems []*System
 
 // System implements the data for a system.
 type System struct {
-	x, y, z int
-	kind    SystemKind
+	X, Y, Z int
+	Kind    SystemKind
 }
 
 func (s *System) Points() (float64, float64, float64) {
 	if s == nil {
 		return 0, 0, 0
 	}
-	return float64(s.x), float64(s.y), float64(s.z)
+	return float64(s.X), float64(s.Y), float64(s.Z)
 }
 
 // SystemKind is an enum for the type of system
@@ -75,7 +75,7 @@ func (sk SystemKind) String() string {
 
 func (s *Store) Filter(fn func(*System) bool) Systems {
 	var systems Systems
-	for _, system := range s.systems {
+	for _, system := range s.Systems {
 		if !fn(system) {
 			continue
 		}

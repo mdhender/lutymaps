@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "version": 1
+  },
+  "systems": [
+    {"x":20, "y":-4, "z":28, "kind": "Yellow Main Sequence"},
+    {"x":18, "y":-3, "z":17, "kind": "Dense Dust Cloud"},
+    {"x":18, "y":-2, "z":17, "kind": "Medium Dust Cloud"},
+    {"x":19, "y": 7, "z":-3, "kind": "Blue Super Giant"}
+  ]
+}

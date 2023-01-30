@@ -48,14 +48,32 @@ var cmdScan = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		jstore, err = adapters.StoreToJSDB(mstore)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = jstore.Save("galaxy-002.json")
-		if err != nil {
-			log.Fatal(err)
-		}
+		//jstore, err = adapters.StoreToJSDB(mstore)
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
+		//kinds := []string{
+		//	"Blue Super Giant",
+		//	"Blue Super Giant",
+		//	"Blue Super Giant",
+		//	"Yellow Main Sequence",
+		//	"Yellow Main Sequence",
+		//	"Dense Dust Cloud",
+		//	"Medium Dust Cloud",
+		//	"Light Dust Cloud",
+		//}
+		//for i := len(jstore.Systems); i < 10_000; i++ {
+		//	jstore.Systems = append(jstore.Systems, &jsdb.System{
+		//		X:    rand.Intn(51) - 25,
+		//		Y:    rand.Intn(51) - 25,
+		//		Z:    rand.Intn(51) - 25,
+		//		Kind: kinds[rand.Intn(len(kinds))],
+		//	})
+		//}
+		//err = jstore.Save("galaxy-002.json")
+		//if err != nil {
+		//	log.Fatal(err)
+		//}
 
 		err = scan.New(mstore, mem.FilterBySector(0, 0, 0, 50), "scan.png")
 		if err != nil {

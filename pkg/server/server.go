@@ -24,20 +24,30 @@
 
 package server
 
+import "net/http"
+
 // Server implements the application's web server.
 type Server struct {
 	authn Authentication
 	authz Authorization
+	app   *App
+	api   *Api
 }
 
 // New returns a partially initialized server.
 // You must still run server.Routes() to create the routes.
 func New(options ...Option) (*Server, error) {
-	s := &Server{}
+	s := &Server{
+		app: &App{},
+	}
 	for _, opt := range options {
 		if err := opt(s); err != nil {
 			return nil, err
 		}
 	}
 	return s, nil
+}
+
+func notImplemented(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
 }

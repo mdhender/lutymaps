@@ -26,41 +26,16 @@ package server
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"net/http"
 )
 
-func (s *Server) Routes() http.Handler {
+type Api struct{}
+
+func (a *Api) Router() http.Handler {
 	r := chi.NewRouter()
 
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{
-			"GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS",
-		},
-		AllowedHeaders: []string{
-			"Accept", "Accept-Encoding", "Accept-Language", "Authorization",
-			"Cache-Control", "Connection", "Content-Type", "DNT", "Host",
-			"Origin", "Pragma", "Referer", "User-Agent",
-		},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300, // Maximum value not ignored by any of major browsers
-	}))
-
-	// public routes
-	r.Mount("/", s.app.Router())
-
-	// protected routes
-	r.Route("/api", func(r chi.Router) {
-		//r.Use(jwtauth.Verifier(tokenAuth)) // extract, verify, validate JWT
-		////r.Use(jwtauth.Authenticator)       // handle valid and invalid JWT
-		//r.Use(JWTAuthenticator)    // handle valid and invalid JWT
-		r.Mount("/", s.api.Router()) // mount the api sub-router
-	})
+	r.Get("/games", notImplemented)
+	r.Get("/game/{gameId}", notImplemented)
 
 	return r
 }

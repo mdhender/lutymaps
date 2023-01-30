@@ -64,7 +64,11 @@ var cmdServe = &cobra.Command{
 		}
 		log.Printf("serve: adapted accounts store\n")
 
-		s, err := server.New(server.WithAuthentication(mstore), server.WithAuthorization(mstore))
+		var options []server.Option
+		options = append(options, server.WithAuthentication(mstore))
+		options = append(options, server.WithAuthorization(mstore))
+
+		s, err := server.New(options...)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -25,6 +25,8 @@
 package server
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 )
@@ -34,8 +36,22 @@ type Api struct{}
 func (a *Api) Router() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/games", notImplemented)
-	r.Get("/game/{gameId}", notImplemented)
+	r.Get("/", notImplemented)
+	r.Get("/echo", a.echoHandler())
 
 	return r
+}
+
+func (a *Api) echoHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		response := struct {
+			Status string `json:"status"`
+			Code   string `json:"code"`
+		}{
+			Status: fmt.Sprintf("%d", http.StatusUnauthorized),
+			Code:   http.StatusText(http.StatusUnauthorized),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(response)
+	}
 }

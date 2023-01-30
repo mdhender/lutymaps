@@ -39,6 +39,7 @@ type Server struct {
 func New(options ...Option) (*Server, error) {
 	s := &Server{
 		app: &App{},
+		api: &Api{},
 	}
 	for _, opt := range options {
 		if err := opt(s); err != nil {

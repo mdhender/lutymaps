@@ -25,10 +25,8 @@
 package cli
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/mdhender/lutymaps/pkg/adapters"
+	"github.com/mdhender/lutymaps/pkg/server"
 	"github.com/mdhender/lutymaps/pkg/stores/jsdb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -66,24 +64,14 @@ var cmdServe = &cobra.Command{
 		}
 		log.Printf("serve: adapted accounts store\n")
 
-		r, routerName := chi.NewRouter(), "chi"
-		r.Use(middleware.Logger)
-		r.Use(middleware.Recoverer)
-		r.Use(cors.Handler(cors.Options{
-			AllowedOrigins: []string{"*"},
-			AllowedMethods: []string{
-				"GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS",
-			},
-			AllowedHeaders: []string{
-				"Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Cache-Control", "Connection", "Content-Type", "DNT", "Host", "Origin", "Pragma", "Referer", "User-Agent",
-			},
-			ExposedHeaders:   []string{"Link"},
-			AllowCredentials: true,
-			MaxAge:           300, // Maximum value not ignored by any of major browsers
-		}))
+		s, err := server.New(server.WithAuthentication(mstore), server.WithAuthorization(mstore))
+		if err != nil {
+			log.Fatal(err)
+		}
+		router := s.Routes()
 
-		log.Printf("server: listening on %q using %s router\n", net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port), routerName)
-		log.Fatal(http.ListenAndServe(net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port), r))
+		log.Printf("server: listening on %q\n", net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port))
+		log.Fatal(http.ListenAndServe(net.JoinHostPort(cliConfig.Server.Host, cliConfig.Server.Port), router))
 	},
 }
 

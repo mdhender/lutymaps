@@ -22,29 +22,34 @@
  * SOFTWARE.
  */
 
-package auth
+package server
 
-// DO NOT USE - this is an example only!
+import (
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	"net/http"
+)
 
-// DoNotUse provides an example of how to implement these interfaces.
-type DoNotUse struct{}
+func (s *Server) Routes() http.Handler {
+	r := chi.NewRouter()
 
-// Authenticate implements the Authentication interface.
-func (dnu DoNotUse) Authenticate(id, secret string) (string, bool) {
-	if id == "whiskey" && secret == "tango.foxtrot" {
-		return "00112233-4455-6677-8899-aabbccddeeff", true
-	}
-	return "", false
-}
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{
+			"GET", "PUT", "POST", "DELETE", "HEAD", "OPTIONS",
+		},
+		AllowedHeaders: []string{
+			"Accept", "Accept-Encoding", "Accept-Language", "Authorization",
+			"Cache-Control", "Connection", "Content-Type", "DNT", "Host",
+			"Origin", "Pragma", "Referer", "User-Agent",
+		},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
 
-// Authorize implements the Authorization interface.
-func (dnu DoNotUse) Authorize(id string) func(role string) bool {
-	if id == "00112233-4455-6677-8899-aabbccddeeff" {
-		return func(role string) bool {
-			return role == "guest"
-		}
-	}
-	return func(_ string) bool {
-		return false
-	}
+	return r
 }

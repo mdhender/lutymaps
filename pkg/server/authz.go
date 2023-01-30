@@ -22,34 +22,12 @@
  * SOFTWARE.
  */
 
-package mem
+package server
 
-type Accounts map[string]Account
-
-// Account details
-type Account struct {
-	Id           string
-	UserId       string
-	HashedSecret string // hashed secret
-	Roles        map[string]bool
-}
-
-// Authenticate implements the server.Authentication interface.
-func (s *Store) Authenticate(id, secret string) (string, bool) {
-	if id == "whiskey" && secret == "tango.foxtrot" {
-		return "00112233-4455-6677-8899-aabbccddeeff", true
-	}
-	return "", false
-}
-
-// Authorize implements the server.Authorization interface.
-func (s *Store) Authorize(id string) func(role string) bool {
-	if id == "00112233-4455-6677-8899-aabbccddeeff" {
-		return func(role string) bool {
-			return role == "guest"
-		}
-	}
-	return func(_ string) bool {
-		return false
-	}
+// Authorization defines an interface for authorizing users.
+type Authorization interface {
+	// Authorize accepts an id and returns a function that checks the id against a given role.
+	// If the id is authorized for the role, it returns true.
+	// Otherwise, it returns false.
+	Authorize(id string) func(role string) bool
 }

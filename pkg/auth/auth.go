@@ -22,21 +22,30 @@
  * SOFTWARE.
  */
 
-// Package auth defines interfaces for authentication and authorization
+// Package auth implements examples for authentication and authorization
 package auth
 
-// Authentication defines an interface for authenticating users.
-type Authentication interface {
-	// Authenticate accepts an id and secret. If the pair is valid,
-	// it returns the authenticated id and true. Otherwise, it
-	// returns an empty string and false.
-	Authenticate(id, secret string) (string, bool)
+// DO NOT USE - this is an example only!
+
+// DoNotUse provides an example of how to implement these interfaces.
+type DoNotUse struct{}
+
+// Authenticate implements the server.Authentication interface.
+func (dnu DoNotUse) Authenticate(id, secret string) (string, bool) {
+	if id == "whiskey" && secret == "tango.foxtrot" {
+		return "00112233-4455-6677-8899-aabbccddeeff", true
+	}
+	return "", false
 }
 
-// Authorization defines an interface for authorizing users.
-type Authorization interface {
-	// Authorize accepts an id and returns a function that checks
-	// the id against a given role. If the id is authorized for
-	// the role, it returns true. Otherwise, it returns false.
-	Authorize(id string) func(role string) bool
+// Authorize implements the server.Authorization interface.
+func (dnu DoNotUse) Authorize(id string) func(role string) bool {
+	if id == "00112233-4455-6677-8899-aabbccddeeff" {
+		return func(role string) bool {
+			return role == "guest"
+		}
+	}
+	return func(_ string) bool {
+		return false
+	}
 }

@@ -22,34 +22,22 @@
  * SOFTWARE.
  */
 
-package mem
+package server
 
-type Accounts map[string]Account
-
-// Account details
-type Account struct {
-	Id           string
-	UserId       string
-	HashedSecret string // hashed secret
-	Roles        map[string]bool
+// Server implements the application's web server.
+type Server struct {
+	authn Authentication
+	authz Authorization
 }
 
-// Authenticate implements the server.Authentication interface.
-func (s *Store) Authenticate(id, secret string) (string, bool) {
-	if id == "whiskey" && secret == "tango.foxtrot" {
-		return "00112233-4455-6677-8899-aabbccddeeff", true
-	}
-	return "", false
-}
-
-// Authorize implements the server.Authorization interface.
-func (s *Store) Authorize(id string) func(role string) bool {
-	if id == "00112233-4455-6677-8899-aabbccddeeff" {
-		return func(role string) bool {
-			return role == "guest"
+// New returns a partially initialized server.
+// You must still run server.Routes() to create the routes.
+func New(options ...Option) (*Server, error) {
+	s := &Server{}
+	for _, opt := range options {
+		if err := opt(s); err != nil {
+			return nil, err
 		}
 	}
-	return func(_ string) bool {
-		return false
-	}
+	return s, nil
 }

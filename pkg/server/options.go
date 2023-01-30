@@ -22,34 +22,20 @@
  * SOFTWARE.
  */
 
-package mem
+package server
 
-type Accounts map[string]Account
+type Option func(server *Server) error
 
-// Account details
-type Account struct {
-	Id           string
-	UserId       string
-	HashedSecret string // hashed secret
-	Roles        map[string]bool
+func WithAuthentication(authn Authentication) Option {
+	return func(s *Server) error {
+		s.authn = authn
+		return nil
+	}
 }
 
-// Authenticate implements the server.Authentication interface.
-func (s *Store) Authenticate(id, secret string) (string, bool) {
-	if id == "whiskey" && secret == "tango.foxtrot" {
-		return "00112233-4455-6677-8899-aabbccddeeff", true
-	}
-	return "", false
-}
-
-// Authorize implements the server.Authorization interface.
-func (s *Store) Authorize(id string) func(role string) bool {
-	if id == "00112233-4455-6677-8899-aabbccddeeff" {
-		return func(role string) bool {
-			return role == "guest"
-		}
-	}
-	return func(_ string) bool {
-		return false
+func WithAuthorization(authz Authorization) Option {
+	return func(s *Server) error {
+		s.authz = authz
+		return nil
 	}
 }

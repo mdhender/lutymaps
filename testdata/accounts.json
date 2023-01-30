@@ -1,0 +1,12 @@
+{
+  "accounts": [
+    {
+      "id": "00112233-4455-6677-8899-aabbccddeeff",
+      "user-id": "whiskey",
+      "secret": "tango.foxtrot",
+      "roles": [
+        "authenticated"
+      ]
+    }
+  ]
+}

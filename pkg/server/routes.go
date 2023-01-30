@@ -29,6 +29,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"net/http"
+	"path/filepath"
+	"strings"
 )
 
 func (s *Server) Routes() http.Handler {
@@ -62,5 +64,25 @@ func (s *Server) Routes() http.Handler {
 		r.Mount("/", s.api.Router()) // mount the api sub-router
 	})
 
+	// static files
+	s.static = http.FileServer(http.Dir(s.public))
+	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		// osPath is the cleaned up path with our file system path separators
+		osPath := filepath.Clean(r.RequestURI)
+		// urlPath is the same but with url path separators
+		urlPath := strings.ReplaceAll(osPath, "\\", "/")
+		// verify that the request path in the url matches the cleaned up path
+		if r.RequestURI != urlPath { // forbid when there's a mismatch
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+		s.static.ServeHTTP(w, r)
+	})
+
+	s.router = r
 	return r
+}
+
+// staticFiles serves static files.
+func (s *Server) staticFiles(router *chi.Mux) {
 }

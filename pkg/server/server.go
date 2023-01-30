@@ -28,18 +28,22 @@ import "net/http"
 
 // Server implements the application's web server.
 type Server struct {
-	authn Authentication
-	authz Authorization
-	app   *App
-	api   *Api
+	authn  Authentication
+	authz  Authorization
+	app    *App
+	api    *Api
+	public string
+	router http.Handler
+	static http.Handler
 }
 
 // New returns a partially initialized server.
 // You must still run server.Routes() to create the routes.
 func New(options ...Option) (*Server, error) {
 	s := &Server{
-		app: &App{},
-		api: &Api{},
+		app:    &App{},
+		api:    &Api{},
+		public: "D:\\luty\\lutymaps\\public",
 	}
 	for _, opt := range options {
 		if err := opt(s); err != nil {

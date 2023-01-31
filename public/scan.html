@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Licensed under a BSD license. See license.html for license -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Three.js - Fundamentals 3 cubes</title>
+</head>
+<body>
+<canvas id="c" width="640" height="480"></canvas>
+
+<div id="uiButton">
+    <button id="screenshot" type="button">Save...</button>
+    <button onclick="window.location.href='https://github.com/mdhender/lutymaps';">
+        <img src="img/github-mark.png" alt="Github" width="18" height="18"/>
+    </button>
+</div>
+
+<!-- Import maps polyfill -->
+<!-- Remove this when import maps will be widely supported -->
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+<script type="importmap"> {
+      "imports": {
+        "three": "https://unpkg.com/three@0.147.0/build/three.module.js"
+      }
+    }
+</script>
+
+<script src="js/scan.js" type="module" defer></script>
+</body>
+</html>
+

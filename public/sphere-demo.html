@@ -33,12 +33,9 @@
 <!-- Remove this when import maps will be widely supported -->
 <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
 <script type="importmap">
-{
-  "imports": {
+{"imports": {
     "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
-  }
-}
+    "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"}}
 </script>
 
 <script type="module">
@@ -47,19 +44,67 @@
 	import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 	import Stats from 'three/addons/libs/stats.module.js';
+
 	const stats = new Stats();
 	stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-    document.body.appendChild(stats.dom);
+	document.body.appendChild(stats.dom);
 
 	let container, controls, camera, scene, renderer;
-	const radius = 1280;
+
+	// systems in the current sector
+	const sector = {
+		origin: {x: 0, y: 0, z: 0},
+		systems: [
+			{x: 20, y: -4, z: 28, kind: "Yellow Main Sequence"},
+			{x: 18, y: -3, z: 17, kind: "Dense Dust Cloud"},
+			{x: 18, y: -2, z: 17, kind: "Medium Dust Cloud"},
+			{x: 19, y: 7, z: -3, kind: "Blue Super Giant"},
+			{x: 10, y: -5, z: 0, kind: "Blue Super Giant"},
+			{x: -18, y: 7, z: -2, kind: "Yellow Main Sequence"},
+			{x: 13, y: 7, z: 17, kind: "Medium Dust Cloud"},
+			{x: 8, y: 11, z: -23, kind: "Dense Dust Cloud"},
+			{x: 21, y: 10, z: 7, kind: "Yellow Main Sequence"},
+			{x: 19, y: -14, z: -5, kind: "Yellow Main Sequence"},
+			{x: -5, y: 9, z: 24, kind: "Blue Super Giant"},
+			{x: -3, y: 17, z: -21, kind: "Light Dust Cloud"},
+			{x: 20, y: 0, z: -7, kind: "Yellow Main Sequence"},
+			{x: 8, y: 22, z: -18, kind: "Yellow Main Sequence"},
+			{x: -25, y: -23, z: 5, kind: "Blue Super Giant"},
+			{x: -24, y: 1, z: 23, kind: "Blue Super Giant"},
+			{x: 1, y: -22, z: 11, kind: "Dense Dust Cloud"},
+			{x: 20, y: -23, z: -2, kind: "Light Dust Cloud"}]
+	};
+
+	// determine the radius of the sector
+	let minX, maxX, minY, maxY, minZ, maxZ;
+	for (let i = 0; i < sector.systems.length; i++) {
+		const system = sector.systems[i];
+		if (i === 0 || system.x < minX) {
+			minX = system.x
+		}
+		if (i === 0 || maxX < system.x) {
+			maxX = system.x
+		}
+		if (i === 0 || system.y < minY) {
+			minY = system.y
+		}
+		if (i === 0 || maxY < system.y) {
+			maxY = system.y
+		}
+		if (i === 0 || system.z < minZ) {
+			minZ = system.z
+		}
+		if (i === 0 || maxZ < system.z) {
+			maxZ = system.z
+		}
+	}
+	const radius = Math.max(maxX - minX, maxY - minY, maxZ - minZ) / 2 + 1;
 
 	// used to rotate the origin
 	let theta = 0;
-	// used to move the light
-	let time = 0;
 
-	const sradius = 12;
+	const scaler = 2;
+	const sradius = scaler * 0.325;
 	const widthSegments = 32;
 	const heightSegments = 16;
 
@@ -76,23 +121,6 @@
 	const starBlueMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
 	const starYellowMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
 
-	// from https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
-	function getPoint() {
-		const u = Math.random();
-		const v = Math.random();
-		const theta = u * 2.0 * Math.PI;
-		const phi = Math.acos(2.0 * v - 1.0);
-		const r = Math.cbrt(Math.random());
-		const sinTheta = Math.sin(theta);
-		const cosTheta = Math.cos(theta);
-		const sinPhi = Math.sin(phi);
-		const cosPhi = Math.cos(phi);
-		const x = r * sinPhi * cosTheta;
-		const y = r * sinPhi * sinTheta;
-		const z = r * cosPhi;
-		return {x: x, y: y, z: z};
-	}
-
 	function onWindowResize() {
 		camera.aspect = window.innerWidth / window.innerHeight;
 		camera.updateProjectionMatrix();
@@ -104,15 +132,11 @@
 		document.body.appendChild(container);
 
 		const fov = 75;
-		const aspect = 2;  // the canvas default
-		//const aspect = window.innerWidth / window.innerHeight;
+		const aspect = window.innerWidth / window.innerHeight;
 		const near = 0.1;
-		const far = 1600; // 5
+		const far = 2 * scaler * (2 * radius + 1);
 
 		camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-		camera.position.x = radius / 2;
-		camera.position.y = radius / 2;
-		camera.position.z = radius / 2;
 
 		const lightColor = 0xffffff;
 		const lightIntensity = 1;
@@ -129,42 +153,48 @@
 		scene.add(camera);
 
 		scene.add(originMesh);
-        // cube at origin (will eventually be lattice around sector)
-        const cubeGeometry = new THREE.BoxGeometry(25, 25, 25)
-        const cubeMaterial = new THREE.MeshBasicMaterial({
-            color: 0x000000,
-            wireframe: true
-        });
-        scene.add(new THREE.Mesh(cubeGeometry, cubeMaterial));
+		// cube at origin (will eventually be lattice around sector)
+		const cubeGeometry = new THREE.BoxGeometry(sradius * 2 + 1, sradius * 2 + 1, sradius * 2 + 1)
+		const cubeMaterial = new THREE.MeshBasicMaterial({
+			color: 0x000000,
+			wireframe: true
+		});
+		scene.add(new THREE.Mesh(cubeGeometry, cubeMaterial));
 
-		for (let i = 0; i < 10000; i++) {
-			const layer = (i % 5) + 1;
+		for (let i = 0; i < sector.systems.length; i++) {
 			const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
 			let material;
-			switch (layer) {
-				case 1:
+			let layer;
+			const system = sector.systems[i];
+			switch (system.kind) {
+				case "Light Dust Cloud":
+					layer = 1;
 					material = dustCloudLightMaterial;
 					break;
-				case 2:
+				case "Medium Dust Cloud":
+					layer = 2;
 					material = dustCloudMediumMaterial;
 					break;
-				case 3:
+				case "Dense Dust Cloud":
+					layer = 3;
 					material = dustCloudDenseMaterial;
 					break;
-				case 4:
+				case "Blue Super Giant":
+					layer = 4;
 					material = starBlueMaterial;
 					break;
-				case 5:
+				case "Yellow Main Sequence":
+					layer = 5;
 					material = starYellowMaterial;
 					break;
 				default:
+					layer = 0;
 					material = new THREE.MeshLambertMaterial({color: 0x442288});
 					break;
 			}
 
 			const sphere = new THREE.Mesh(geometry, material);
-			const p = getPoint();
-			sphere.position.set(p.x * radius, p.y * radius, p.z * radius);
+			sphere.position.set(system.x * scaler, system.y * scaler, system.z * scaler);
 			sphere.layers.set(layer);
 
 			scene.add(sphere);
@@ -177,7 +207,7 @@
 
 		//controls.update() must be called after any manual changes to the camera's transform
 		controls = new OrbitControls(camera, renderer.domElement);
-		camera.position.set(0, 20, 100);
+		camera.position.set(scaler * radius, scaler * radius, scaler * radius);
 		controls.update();
 
 		// Init gui

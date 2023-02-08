@@ -46,6 +46,7 @@
     "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
   }
 }
+
 </script>
 
 <script type="module">
@@ -56,7 +57,24 @@
 	let container, controls, camera, scene, renderer;
 	let paused = false;
 	let theta = 0;
-	const radius = 400;
+	const radius = 1280;
+
+    // from https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
+    function getPoint() {
+        const u = Math.random();
+        const v = Math.random();
+        const theta = u * 2.0 * Math.PI;
+        const phi = Math.acos(2.0 * v - 1.0);
+        const r = Math.cbrt(Math.random());
+        const sinTheta = Math.sin(theta);
+        const cosTheta = Math.cos(theta);
+        const sinPhi = Math.sin(phi);
+        const cosPhi = Math.cos(phi);
+        const x = r * sinPhi * cosTheta;
+        const y = r * sinPhi * sinTheta;
+        const z = r * cosPhi;
+        return {x: x, y: y, z: z};
+    }
 
 	function onWindowResize() {
 		camera.aspect = window.innerWidth / window.innerHeight;
@@ -100,24 +118,18 @@
 		const heightSegments = 16;
 		scene.add(new THREE.Mesh(new THREE.SphereGeometry(sradius, widthSegments, heightSegments), new THREE.MeshBasicMaterial({color: 0x000000})));
 
-		let lid = 0;
-		for (let ring = 1; ring < 100; ring++) {
-			for (let i = 0; i < 360; i = i + 15) {
-				const layer = (lid % 3);
-				lid = lid + 1;
-				const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
-				//const material = new THREE.MeshBasicMaterial({color: colors[layer]});
-				const material = new THREE.MeshLambertMaterial({color: colors[layer]});
+		for (let i = 0; i < 10000; i++) {
+			const layer = (i % 3);
+			const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
+			//const material = new THREE.MeshBasicMaterial({color: colors[layer]});
+			const material = new THREE.MeshLambertMaterial({color: colors[layer]});
 
-				const sphere = new THREE.Mesh(geometry, material);
-				// sphere.position.set(Math.random() * 400 - 200, Math.random() * 400 - 200, Math.random() * 400 - 200);
-				const x = Math.cos(THREE.MathUtils.degToRad(i)) * ring * 25;
-				const y = Math.sin(THREE.MathUtils.degToRad(i)) * ring * 25;
-				sphere.position.set(x, y, ring * 25 * (Math.random() * 4 - 2));
-				sphere.layers.set(layer);
+			const sphere = new THREE.Mesh(geometry, material);
+			const p = getPoint();
+			sphere.position.set(p.x*radius, p.y*radius, p.z*radius);
+			sphere.layers.set(layer);
 
-				scene.add(sphere);
-			}
+			scene.add(sphere);
 		}
 
 		renderer = new THREE.WebGLRenderer();

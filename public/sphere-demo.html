@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Sphere Demo</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #444;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #newWindow {
+            display: block;
+            position: absolute;
+            bottom: 0.3em;
+            left: 0.5em;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<!-- canvas id="c" width="1280" height="640"></canvas -->
+<div id="uiButton">
+    <button id="pause" type="button">Pause</button>
+    <button id="screenshot" type="button">Save...</button>
+    <button onclick="window.location.href='https://github.com/mdhender/lutymaps';">
+        <img src="img/github-mark.png" alt="Github" width="18" height="18"/>
+    </button>
+</div>
+
+<!-- Import maps polyfill -->
+<!-- Remove this when import maps will be widely supported -->
+<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+	import * as THREE from 'three';
+	import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
+
+	let container, camera, scene, renderer;
+	let paused = false;
+	let theta = 0;
+	const radius = 400;
+
+	function onWindowResize() {
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth, window.innerHeight);
+	}
+
+	function init() {
+		container = document.createElement('div');
+		document.body.appendChild(container);
+
+		const fov = 75;
+		const aspect = 2;  // the canvas default
+		//const aspect = window.innerWidth / window.innerHeight;
+		const near = 0.1;
+		const far = 1600; // 5
+
+		camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+		camera.position.x = radius / 2;
+		camera.position.y = radius / 2;
+		camera.position.z = radius / 2;
+		camera.layers.enable(0); // enabled by default
+		camera.layers.enable(1);
+		camera.layers.enable(2);
+
+		const lightColor = 0xffffff;
+		const lightIntensity = 1;
+		const light = new THREE.PointLight(lightColor, lightIntensity);
+		light.layers.enable(0);
+		light.layers.enable(1);
+		light.layers.enable(2);
+		camera.add(light);
+
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0xf0f0f0);
+		scene.add(camera);
+
+		const colors = [0xff0000, 0x00ff00, 0x0000ff];
+		const sradius = 5;
+		const widthSegments = 32;
+		const heightSegments = 16;
+        scene.add(new THREE.Mesh(new THREE.SphereGeometry(sradius, widthSegments, heightSegments), new THREE.MeshBasicMaterial({color: 0x000000})));
+
+		for (let i = 0; i < 300; i++) {
+			const layer = (i % 3);
+			const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
+			//const material = new THREE.MeshBasicMaterial({color: colors[layer]});
+			const material = new THREE.MeshLambertMaterial({color: colors[layer]});
+
+			const sphere = new THREE.Mesh(geometry, material);
+			sphere.position.set(Math.random() * 400 - 200, Math.random() * 400 - 200, Math.random() * 400 - 200);
+			sphere.layers.set(layer);
+
+			scene.add(sphere);
+		}
+
+		renderer = new THREE.WebGLRenderer();
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		container.appendChild(renderer.domElement);
+
+		// Init gui
+		const gui = new GUI();
+		const layers = {
+			'toggle light dust clouds': function () {
+				camera.layers.toggle(0);
+			},
+			'toggle medium dust clouds': function () {
+				camera.layers.toggle(1);
+			},
+			'toggle dense dust clouds': function () {
+				camera.layers.toggle(2);
+			},
+			'enable all': function () {
+				camera.layers.enableAll();
+			},
+			'disable all': function () {
+				camera.layers.disableAll();
+			}
+		};
+		gui.add(layers, 'toggle light dust clouds');
+		gui.add(layers, 'toggle medium dust clouds');
+		gui.add(layers, 'toggle dense dust clouds');
+		gui.add(layers, 'enable all');
+		gui.add(layers, 'disable all');
+
+		window.addEventListener('resize', onWindowResize);
+	}
+
+	function render() {
+		theta += 0.1;
+		camera.position.x = radius * Math.sin(THREE.MathUtils.degToRad(theta));
+		camera.position.y = radius * Math.cos(THREE.MathUtils.degToRad(theta));
+		//camera.position.z = radius  * Math.cos(THREE.MathUtils.degToRad(theta));
+		camera.lookAt(scene.position);
+		//console.log(scene.position, camera.position);
+		renderer.render(scene, camera);
+	}
+
+	function animate() {
+        requestAnimationFrame(animate);
+		if (!paused) {
+			render();
+		}
+	}
+
+	const bPause = document.querySelector('#pause');
+	bPause.addEventListener('click', () => {
+		paused = !paused;
+	});
+
+	const bSave = document.querySelector('#screenshot');
+	bSave.addEventListener('click', () => {
+		render();
+		const canvas = renderer.domElement;
+		canvas.toBlob((blob) => {
+			saveBlob(blob, `screencapture-${canvas.width}x${canvas.height}.png`);
+		});
+	});
+
+	const saveBlob = (function () {
+		const a = document.createElement('a');
+		document.body.appendChild(a);
+		a.style.display = 'none';
+		return function saveData(blob, fileName) {
+			a.href = window.URL.createObjectURL(blob);
+			a.download = fileName;
+			a.click();
+		};
+	}());
+
+	init();
+	animate();
+</script>
+
+</body>
+</html>

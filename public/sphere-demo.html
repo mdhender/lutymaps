@@ -45,8 +45,6 @@
     "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
   }
 }
-
-
 </script>
 
 <script type="module">
@@ -55,15 +53,29 @@
 	import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 	let container, controls, camera, scene, renderer;
-	let theta = 0;
 	const radius = 1280;
 
-	const mushterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('img/EW7s2zy.jpeg')});
+	// used to rotate the origin
+	let theta = 0;
+	// used to move the light
+	let time = 0;
+
+	const sradius = 12;
+	const widthSegments = 32;
+	const heightSegments = 16;
+
+	const originGeometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
+	const originMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('img/origin.jpg')});
+	const originMesh = new THREE.Mesh(originGeometry, originMaterial);
+
+	const dustCloudGeometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
 	const dustCloudLightMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('img/dust_cloud_light.jpg')});
 	const dustCloudMediumMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('img/dust_cloud_medium.jpg')});
 	const dustCloudDenseMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('img/dust_cloud_dense.jpg')});
-    const blueStarMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
-    const yellowStarMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
+
+	const starGeometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
+	const starBlueMaterial = new THREE.MeshBasicMaterial({color: 0x0000ff});
+	const starYellowMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
 
 	// from https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
 	function getPoint() {
@@ -105,8 +117,8 @@
 		camera.layers.enable(0); // enabled by default
 		camera.layers.enable(1);
 		camera.layers.enable(2);
-        camera.layers.enable(3);
-        camera.layers.enable(4);
+		camera.layers.enable(3);
+		camera.layers.enable(4);
 
 		const lightColor = 0xffffff;
 		const lightIntensity = 1;
@@ -120,11 +132,7 @@
 		scene.background = new THREE.Color(0xf0f0f0);
 		scene.add(camera);
 
-		const colors = [0xff0000, 0x00ff00, 0x0000ff];
-		const sradius = 12;
-		const widthSegments = 32;
-		const heightSegments = 16;
-		scene.add(new THREE.Mesh(new THREE.SphereGeometry(sradius, widthSegments, heightSegments), new THREE.MeshBasicMaterial({color: 0x000000})));
+		scene.add(originMesh);
 
 		for (let i = 0; i < 10000; i++) {
 			const layer = (i % 5);
@@ -140,14 +148,14 @@
 				case 2:
 					material = dustCloudDenseMaterial;
 					break;
-                case 3:
-                    material = blueStarMaterial;
-                    break;
-                case 4:
-                    material = yellowStarMaterial;
-                    break;
+				case 3:
+					material = starBlueMaterial;
+					break;
+				case 4:
+					material = starYellowMaterial;
+					break;
 				default:
-					material = new THREE.MeshLambertMaterial({color: colors[layer]});
+					material = new THREE.MeshLambertMaterial({color: 0x442288});
 					break;
 			}
 
@@ -181,12 +189,12 @@
 			'toggle dense dust clouds': function () {
 				camera.layers.toggle(2);
 			},
-            'toggle blue stars': function () {
-                camera.layers.toggle(3);
-            },
-            'toggle yellow stars': function () {
-                camera.layers.toggle(4);
-            },
+			'toggle blue stars': function () {
+				camera.layers.toggle(3);
+			},
+			'toggle yellow stars': function () {
+				camera.layers.toggle(4);
+			},
 			'enable all': function () {
 				camera.layers.enableAll();
 			},
@@ -197,8 +205,8 @@
 		gui.add(layers, 'toggle light dust clouds');
 		gui.add(layers, 'toggle medium dust clouds');
 		gui.add(layers, 'toggle dense dust clouds');
-        gui.add(layers, 'toggle blue stars');
-        gui.add(layers, 'toggle yellow stars');
+		gui.add(layers, 'toggle blue stars');
+		gui.add(layers, 'toggle yellow stars');
 		gui.add(layers, 'enable all');
 		gui.add(layers, 'disable all');
 
@@ -214,6 +222,10 @@
 
 	function animate() {
 		requestAnimationFrame(animate);
+		theta += 0.01;
+		originMesh.rotation.x = 2 * Math.cos(theta);
+		originMesh.rotation.y = 2 * Math.sin(theta);
+		originMesh.rotation.z = Math.cos(theta);
 		render();
 	}
 

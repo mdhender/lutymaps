@@ -108,18 +108,15 @@
 		camera.position.x = radius / 2;
 		camera.position.y = radius / 2;
 		camera.position.z = radius / 2;
-		camera.layers.enable(0); // enabled by default
-		camera.layers.enable(1);
-		camera.layers.enable(2);
-		camera.layers.enable(3);
-		camera.layers.enable(4);
 
 		const lightColor = 0xffffff;
 		const lightIntensity = 1;
 		const light = new THREE.PointLight(lightColor, lightIntensity);
-		light.layers.enable(0);
-		light.layers.enable(1);
-		light.layers.enable(2);
+
+		for (let i = 0; i <= 5; i++) {
+			camera.layers.enable(i);
+			light.layers.enable(i);
+		}
 		camera.add(light);
 
 		scene = new THREE.Scene();
@@ -129,23 +126,23 @@
 		scene.add(originMesh);
 
 		for (let i = 0; i < 10000; i++) {
-			const layer = (i % 5);
+			const layer = (i % 5) + 1;
 			const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
 			let material;
 			switch (layer) {
-				case 0:
+				case 1:
 					material = dustCloudLightMaterial;
 					break;
-				case 1:
+				case 2:
 					material = dustCloudMediumMaterial;
 					break;
-				case 2:
+				case 3:
 					material = dustCloudDenseMaterial;
 					break;
-				case 3:
+				case 4:
 					material = starBlueMaterial;
 					break;
-				case 4:
+				case 5:
 					material = starYellowMaterial;
 					break;
 				default:
@@ -178,25 +175,27 @@
 				saveCanvas();
 			},
 			'toggle light dust clouds': function () {
-				camera.layers.toggle(0);
-			},
-			'toggle medium dust clouds': function () {
 				camera.layers.toggle(1);
 			},
-			'toggle dense dust clouds': function () {
+			'toggle medium dust clouds': function () {
 				camera.layers.toggle(2);
 			},
-			'toggle blue stars': function () {
+			'toggle dense dust clouds': function () {
 				camera.layers.toggle(3);
 			},
-			'toggle yellow stars': function () {
+			'toggle blue stars': function () {
 				camera.layers.toggle(4);
+			},
+			'toggle yellow stars': function () {
+				camera.layers.toggle(5);
 			},
 			'enable all': function () {
 				camera.layers.enableAll();
 			},
 			'disable all': function () {
 				camera.layers.disableAll();
+				// turn the default layer back on
+				camera.layers.toggle(0);
 			}
 		};
 		gui.add(layers, 'save');

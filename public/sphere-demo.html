@@ -51,8 +51,9 @@
 <script type="module">
 	import * as THREE from 'three';
 	import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
+	import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
-	let container, camera, scene, renderer;
+	let container, controls, camera, scene, renderer;
 	let paused = false;
 	let theta = 0;
 	const radius = 400;
@@ -94,28 +95,40 @@
 		scene.add(camera);
 
 		const colors = [0xff0000, 0x00ff00, 0x0000ff];
-		const sradius = 5;
+		const sradius = 3;
 		const widthSegments = 32;
 		const heightSegments = 16;
-        scene.add(new THREE.Mesh(new THREE.SphereGeometry(sradius, widthSegments, heightSegments), new THREE.MeshBasicMaterial({color: 0x000000})));
+		scene.add(new THREE.Mesh(new THREE.SphereGeometry(sradius, widthSegments, heightSegments), new THREE.MeshBasicMaterial({color: 0x000000})));
 
-		for (let i = 0; i < 300; i++) {
-			const layer = (i % 3);
-			const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
-			//const material = new THREE.MeshBasicMaterial({color: colors[layer]});
-			const material = new THREE.MeshLambertMaterial({color: colors[layer]});
+		let lid = 0;
+		for (let ring = 1; ring < 100; ring++) {
+			for (let i = 0; i < 360; i = i + 15) {
+				const layer = (lid % 3);
+				lid = lid + 1;
+				const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
+				//const material = new THREE.MeshBasicMaterial({color: colors[layer]});
+				const material = new THREE.MeshLambertMaterial({color: colors[layer]});
 
-			const sphere = new THREE.Mesh(geometry, material);
-			sphere.position.set(Math.random() * 400 - 200, Math.random() * 400 - 200, Math.random() * 400 - 200);
-			sphere.layers.set(layer);
+				const sphere = new THREE.Mesh(geometry, material);
+				// sphere.position.set(Math.random() * 400 - 200, Math.random() * 400 - 200, Math.random() * 400 - 200);
+				const x = Math.cos(THREE.MathUtils.degToRad(i)) * ring * 25;
+				const y = Math.sin(THREE.MathUtils.degToRad(i)) * ring * 25;
+				sphere.position.set(x, y, ring * 25 * (Math.random() * 4 - 2));
+				sphere.layers.set(layer);
 
-			scene.add(sphere);
+				scene.add(sphere);
+			}
 		}
 
 		renderer = new THREE.WebGLRenderer();
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		container.appendChild(renderer.domElement);
+
+		//controls.update() must be called after any manual changes to the camera's transform
+		controls = new OrbitControls(camera, renderer.domElement);
+		camera.position.set(0, 20, 100);
+		controls.update();
 
 		// Init gui
 		const gui = new GUI();
@@ -147,19 +160,23 @@
 
 	function render() {
 		theta += 0.1;
-		camera.position.x = radius * Math.sin(THREE.MathUtils.degToRad(theta));
-		camera.position.y = radius * Math.cos(THREE.MathUtils.degToRad(theta));
-		//camera.position.z = radius  * Math.cos(THREE.MathUtils.degToRad(theta));
+		camera.position.x = radius * Math.cos(THREE.MathUtils.degToRad(theta));
+		camera.position.y = radius * Math.sin(THREE.MathUtils.degToRad(theta));
+		camera.position.z = 300; //radius  * Math.cos(THREE.MathUtils.degToRad(theta));
 		camera.lookAt(scene.position);
 		//console.log(scene.position, camera.position);
 		renderer.render(scene, camera);
 	}
 
 	function animate() {
-        requestAnimationFrame(animate);
-		if (!paused) {
-			render();
-		}
+		requestAnimationFrame(animate);
+
+		// required if controls.enableDamping or controls.autoRotate are set to true
+		controls.update();
+		// if (!paused) {
+		// 	render();
+		// }
+		renderer.render(scene, camera);
 	}
 
 	const bPause = document.querySelector('#pause');

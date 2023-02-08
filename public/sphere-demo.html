@@ -129,6 +129,13 @@
 		scene.add(camera);
 
 		scene.add(originMesh);
+        // cube at origin (will eventually be lattice around sector)
+        const cubeGeometry = new THREE.BoxGeometry(25, 25, 25)
+        const cubeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x000000,
+            wireframe: true
+        });
+        scene.add(new THREE.Mesh(cubeGeometry, cubeMaterial));
 
 		for (let i = 0; i < 10000; i++) {
 			const layer = (i % 5) + 1;

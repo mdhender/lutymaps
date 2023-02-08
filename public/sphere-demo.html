@@ -45,6 +45,7 @@
     "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
   }
 }
+
 </script>
 
 <script type="module">
@@ -115,11 +116,27 @@
 		const heightSegments = 16;
 		scene.add(new THREE.Mesh(new THREE.SphereGeometry(sradius, widthSegments, heightSegments), new THREE.MeshBasicMaterial({color: 0x000000})));
 
+		const mushterial = new THREE.MeshBasicMaterial({
+			map: new THREE.TextureLoader().load(
+					'https://i.imgur.com/EW7s2zy.jpeg'
+			)
+		});
+
 		for (let i = 0; i < 10000; i++) {
 			const layer = (i % 3);
 			const geometry = new THREE.SphereGeometry(sradius, widthSegments, heightSegments);
-			//const material = new THREE.MeshBasicMaterial({color: colors[layer]});
-			const material = new THREE.MeshLambertMaterial({color: colors[layer]});
+			let material;
+			switch (i % 3) {
+				case 0:
+                    material = new THREE.MeshLambertMaterial({color: colors[layer]});
+					break;
+				case 1:
+                    material = new THREE.MeshLambertMaterial({color: colors[layer]});
+					break;
+				case 2:
+					material = mushterial;
+					break;
+			}
 
 			const sphere = new THREE.Mesh(geometry, material);
 			const p = getPoint();

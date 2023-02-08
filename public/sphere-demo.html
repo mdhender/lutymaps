@@ -57,7 +57,9 @@
 	let theta = 0;
 	const radius = 1280;
 
-	// from https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
+    const mushterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('https://wraith.dev/luty/img/EW7s2zy.jpeg')});
+
+    // from https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
 	function getPoint() {
 		const u = Math.random();
 		const v = Math.random();
@@ -115,12 +117,6 @@
 		const widthSegments = 32;
 		const heightSegments = 16;
 		scene.add(new THREE.Mesh(new THREE.SphereGeometry(sradius, widthSegments, heightSegments), new THREE.MeshBasicMaterial({color: 0x000000})));
-
-		const mushterial = new THREE.MeshBasicMaterial({
-			map: new THREE.TextureLoader().load(
-					'https://i.imgur.com/EW7s2zy.jpeg'
-			)
-		});
 
 		for (let i = 0; i < 10000; i++) {
 			const layer = (i % 3);

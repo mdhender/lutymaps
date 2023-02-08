@@ -46,6 +46,11 @@
 	import {GUI} from 'three/addons/libs/lil-gui.module.min.js';
 	import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
+	import Stats from 'three/addons/libs/stats.module.js';
+	const stats = new Stats();
+	stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    document.body.appendChild(stats.dom);
+
 	let container, controls, camera, scene, renderer;
 	const radius = 1280;
 
@@ -213,6 +218,8 @@
 	function render() {
 		// required if controls.enableDamping or controls.autoRotate are set to true
 		controls.update();
+		// not sure if we should always update this
+		stats.update();
 
 		renderer.render(scene, camera);
 	}

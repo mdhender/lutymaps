@@ -1,6 +1,6 @@
 module github.com/mdhender/lutymaps
 
-go 1.19
+go 1.24
 
 require (
 	github.com/fogleman/fauxgl v0.0.0-20200818143847-27cddc103802
